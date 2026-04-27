@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="shortcut icon" href="/meteor_commerce_favicon.png" type="image/x-icon">
+<title>Meteor Commerce - Prototip A: Akcije u prvom planu</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --yellow:#EBCA3E;--blue:#4372B5;--dark:#2C4F8A;
+  --text:#1A2340;--muted:#6B7A99;--light:#F5F8FF;--white:#fff;
+}
+body{font-family:'Inter',sans-serif;color:var(--text);background:#f8f9fc}
+
+/* ── IMAGE PLACEHOLDERS ───────────────────────────────────── */
+.img-holder{
+  background:linear-gradient(135deg,#eef2fa 0%,#dce5f5 100%);
+  border:2px dashed #b8c8e8;border-radius:10px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;color:#8a9ec8;font-size:12px;font-weight:600;text-align:center;
+  position:relative;overflow:hidden;
+}
+.img-holder::before{content:'📷';font-size:26px;display:block;opacity:.6}
+.img-holder .ph-label{font-size:11px;color:#a0b2d0;font-weight:500;line-height:1.4}
+/* Variante */
+.img-holder.tall{height:100%;min-height:200px}
+.img-holder.square{aspect-ratio:1/1}
+.img-holder.banner{width:100%;height:100%;border-radius:0;border:none;
+  background:rgba(255,255,255,.08);border:2px dashed rgba(255,255,255,.3)}
+.img-holder.banner::before{opacity:.4}
+.img-holder.banner .ph-label{color:rgba(255,255,255,.5)}
+.img-holder.product{height:160px;border-radius:0;border:none;
+  background:linear-gradient(135deg,#f0f4ff,#e8edf9)}
+.img-holder.product::before{font-size:36px;opacity:.4}
+
+/* ── HEADER ───────────────────────────────────────────────── */
+.header{background:#fff;border-bottom:3px solid var(--yellow);
+  box-shadow:0 2px 20px rgba(67,114,181,.08);position:sticky;top:0;z-index:100}
+.header-inner{max-width:1280px;margin:0 auto;padding:0 20px;
+  display:flex;align-items:center;gap:20px;height:68px}
+.logo{display:flex;align-items:center;text-decoration:none;flex-shrink:0}
+.search-bar{flex:1;max-width:520px;position:relative}
+.search-bar input{width:100%;padding:10px 44px 10px 16px;border:1.5px solid #dce3ef;
+  border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+.search-bar input:focus{border-color:var(--blue)}
+.search-bar button{position:absolute;right:0;top:0;height:100%;padding:0 14px;
+  background:var(--blue);border:none;border-radius:0 8px 8px 0;color:#fff;cursor:pointer;font-size:14px}
+.nav-links{display:flex;gap:4px;margin-left:auto;align-items:center;height:100%;position:relative}
+.nav-links a{text-decoration:none;font-size:14px;font-weight:600;color:var(--text);
+  padding:6px 12px;border-radius:6px;transition:.15s;white-space:nowrap}
+.nav-links a:hover{color:var(--blue);background:var(--light)}
+
+/* MEGA MENU */
+.mega-wrap{position:static;height:100%;display:flex;align-items:center}
+.mega-trigger{text-decoration:none;font-size:14px;font-weight:700;color:var(--blue);
+  padding:6px 12px;border-radius:6px;transition:.15s;white-space:nowrap;cursor:pointer;
+  display:flex;align-items:center;gap:6px;border:none;background:none;
+  font-family:'Inter',sans-serif;height:100%}
+.mega-trigger:hover{background:var(--light)}
+.mega-trigger .arrow{font-size:10px;transition:transform .2s}
+.mega-wrap:hover .arrow{transform:rotate(180deg)}
+.mega-dropdown{
+  position:fixed;top:71px;
+  left:50%;transform:translateX(-50%);
+  width:min(1280px,calc(100vw - 48px));
+  background:#fff;border-top:3px solid var(--yellow);
+  border-radius:0 0 12px 12px;
+  box-shadow:0 16px 48px rgba(44,79,138,.16);
+  padding:0;display:none;z-index:200;
+}
+.mega-wrap:hover .mega-dropdown{display:block}
+.mega-dropdown-inner{padding:24px 24px 28px}
+.mega-dropdown-title{font-size:11px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px}
+.mega-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.mega-item{display:flex;align-items:center;gap:12px;padding:10px 14px;
+  border-radius:8px;text-decoration:none;transition:.15s;border:1.5px solid transparent}
+.mega-item:hover{background:var(--light);border-color:#d0daf5}
+.mega-item-ico{width:38px;height:38px;border-radius:8px;background:var(--light);
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.mega-item:hover .mega-item-ico{background:#d8e4f5}
+.mega-item-text span{display:block;font-size:13px;font-weight:700;color:var(--text);line-height:1.2}
+.mega-item-text small{font-size:11px;color:var(--muted)}
+.mega-footer{margin-top:16px;padding-top:14px;border-top:1px solid #edf0f7;
+  display:flex;justify-content:space-between;align-items:center}
+.mega-footer-left{font-size:13px;font-weight:600;color:var(--blue);text-decoration:none}
+.mega-footer-left:hover{text-decoration:underline}
+.mega-all-btn{background:var(--blue);color:#fff !important;font-size:13px;font-weight:700;
+  padding:8px 20px;border-radius:6px;text-decoration:none;transition:.2s}
+.mega-all-btn:hover{background:var(--dark); color:var(--blue) !important}
+
+/* HAMBURGER */
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;
+  background:none;border:none;padding:4px;margin-left:auto}
+.hamburger span{display:block;width:24px;height:2px;background:var(--text);
+  border-radius:2px;transition:.3s}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* MOBILE MENU OVERLAY */
+.mobile-menu{display:none;position:fixed;top:71px;left:0;right:0;bottom:0;
+  background:#fff;z-index:150;overflow-y:auto;padding:20px;}
+.mobile-menu.open{display:block}
+.mobile-search{margin-bottom:20px}
+.mobile-search input{width:100%;padding:12px 16px;border:1.5px solid #dce3ef;
+  border-radius:8px;font-family:'Inter',sans-serif;font-size:15px;outline:none}
+.mobile-nav-links a{display:block;font-size:16px;font-weight:600;color:var(--text);
+  padding:14px 0;border-bottom:1px solid #f0f3fa;text-decoration:none}
+.mobile-nav-links a:hover{color:var(--blue)}
+.mobile-cat-title{font-size:11px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.1em;margin:20px 0 12px}
+.mobile-cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mobile-cat-item{display:flex;align-items:center;gap:10px;padding:12px;
+  background:var(--light);border-radius:10px;text-decoration:none;color:var(--text);
+  font-size:14px;font-weight:600}
+
+.header-icons{display:flex;gap:14px;align-items:center;flex-shrink:0}
+.icon-btn{background:none;border:none;cursor:pointer;color:var(--blue);
+  font-size:20px;position:relative;padding:4px}
+.badge{position:absolute;top:-4px;right:-4px;background:var(--yellow);color:var(--dark);
+  font-size:10px;font-weight:700;border-radius:50%;width:18px;height:18px;
+  display:flex;align-items:center;justify-content:center}
+
+/* ── PROMO TICKER ─────────────────────────────────────────── */
+.ticker{background:var(--dark);color:#fff;font-size:13px;font-weight:500;
+  text-align:center;padding:8px 20px;letter-spacing:.02em;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.ticker span{color:var(--yellow);font-weight:700}
+
+/* ── HERO ─────────────────────────────────────────────────── */
+.hero-akcija{max-width:1280px;margin:24px auto 0;padding:0 20px;
+  display:grid;grid-template-columns:1fr 360px;gap:16px}
+.hero-main{background:linear-gradient(135deg,var(--dark) 0%,var(--blue) 100%);
+  border-radius:16px;padding:40px;position:relative;overflow:hidden;
+  min-height:300px;display:grid;grid-template-columns:1fr 240px;gap:24px;align-items:end}
+.hero-content{display:flex;flex-direction:column;justify-content:flex-end;position:relative;z-index:2}
+.hero-img-col{display:flex;align-items:flex-end;justify-content:center;position:relative;z-index:2}
+.hero-photo-holder{
+  width:100%;height:220px;border-radius:12px;
+  background:rgba(255,255,255,.08);border:2px dashed rgba(255,255,255,.25);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;color:rgba(255,255,255,.5);font-size:12px;font-weight:500;
+}
+.hero-photo-holder::before{content:'📷';font-size:28px;opacity:.5;display:block}
+.hero-photo-holder .ph-label{color:rgba(255,255,255,.4);font-size:11px;
+  text-align:center;line-height:1.5}
+.hero-main::before{content:'';position:absolute;top:-60px;right:-60px;
+  width:280px;height:280px;background:rgba(235,202,62,.08);border-radius:50%}
+.hero-badge{background:var(--yellow);color:var(--dark);font-size:11px;font-weight:800;
+  padding:4px 12px;border-radius:20px;display:inline-block;margin-bottom:10px;
+  letter-spacing:.08em;text-transform:uppercase;width:fit-content}
+.hero-main h1{font-size:36px;font-weight:900;color:#fff;line-height:1.1;
+  margin-bottom:8px}
+.hero-main h1 span{color:var(--yellow)}
+.hero-main p{color:rgba(255,255,255,.8);font-size:14px;margin-bottom:20px;line-height:1.6}
+.hero-cta-row{display:flex;gap:10px;flex-wrap:wrap}
+.btn-primary{background:var(--yellow);color:var(--dark);font-weight:700;font-size:14px;
+  padding:11px 24px;border-radius:8px;border:none;cursor:pointer;text-decoration:none;
+  display:inline-block;transition:.2s}
+.btn-primary:hover{background:#d4b435;transform:translateY(-1px)}
+.btn-outline{background:transparent;color:#fff;font-weight:600;font-size:14px;
+  padding:11px 20px;border-radius:8px;border:2px solid rgba(255,255,255,.4);cursor:pointer;
+  text-decoration:none;display:inline-block;transition:.2s}
+.btn-outline:hover{border-color:#fff;background:rgba(255,255,255,.1)}
+.countdown{display:flex;gap:8px;margin-top:16px}
+.cd-item{background:rgba(255,255,255,.12);border-radius:8px;padding:8px 12px;
+  text-align:center;min-width:54px}
+.cd-num{font-size:22px;font-weight:800;color:#fff;line-height:1}
+.cd-label{font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.05em}
+
+/* HERO SIDE */
+.hero-side{display:flex;flex-direction:column;gap:12px}
+.mini-banner{border-radius:12px;overflow:hidden;display:flex;flex-direction:column;
+  justify-content:flex-end;min-height:140px;position:relative;text-decoration:none}
+.mini-banner-bg{position:absolute;inset:0;background:url('/prototype_img/mini_baner_1.png')}
+.mini-banner-2 .mini-banner-bg{background:url('/prototype_img/mini_baner_2.png')}
+.mini-banner-img{position:absolute;inset:0}
+.mini-banner-img .img-holder{height:100%;border-radius:0;border:none;
+  background:transparent;opacity:.35}
+.mini-banner-img .img-holder::before{font-size:22px;color:rgba(255,255,255,.7)}
+.mini-banner-content{position:relative;z-index:2;padding:20px}
+.mini-banner-badge{background:rgba(255,255,255,.2);color:#fff;font-size:10px;
+  font-weight:700;padding:3px 10px;border-radius:12px;display:inline-block;
+  margin-bottom:8px;letter-spacing:.06em;text-transform:uppercase;width:fit-content}
+.mini-banner h3{font-size:17px;font-weight:800;color:#fff;line-height:1.2;margin-bottom:4px}
+.mini-banner p{font-size:12px;color:rgba(255,255,255,.8)}
+.mini-banner-arrow{position:absolute;bottom:16px;right:16px;z-index:3;
+  background:rgba(255,255,255,.2);width:30px;height:30px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px}
+
+/* ── PROMO STRIP ──────────────────────────────────────────── */
+.promo-strip{max-width:1280px;margin:20px auto 0;padding:0 20px;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.promo-card{background:#fff;border-radius:10px;padding:18px;
+  display:flex;align-items:center;gap:14px;
+  box-shadow:0 2px 12px rgba(67,114,181,.06);border:1px solid #edf0f7}
+.promo-icon{width:42px;height:42px;border-radius:10px;background:var(--light);
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.promo-card h4{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px}
+.promo-card p{font-size:12px;color:var(--muted)}
+
+/* ── SECTION ──────────────────────────────────────────────── */
+.section{max-width:1280px;margin:40px auto 0;padding:0 20px}
+.section-header{display:flex;align-items:baseline;justify-content:space-between;
+  margin-bottom:20px;gap:12px}
+.section-header h2{font-size:21px;font-weight:800;color:var(--text)}
+.section-header h2 span{color:var(--blue)}
+.see-all{font-size:13px;font-weight:600;color:var(--blue);text-decoration:none;
+  white-space:nowrap;flex-shrink:0}
+.see-all:hover{text-decoration:underline}
+.tag{background:var(--yellow);color:var(--dark);font-size:11px;font-weight:800;
+  padding:3px 10px;border-radius:20px;letter-spacing:.06em;text-transform:uppercase;
+  margin-left:10px;vertical-align:middle}
+
+/* ── KATEGORIJE ───────────────────────────────────────────── */
+.cat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.cat-card{background:#fff;border-radius:12px;padding:18px 10px;text-align:center;
+  text-decoration:none;border:1.5px solid #edf0f7;transition:.2s;
+  display:flex;flex-direction:column;align-items:center;gap:8px}
+.cat-card:hover{border-color:var(--blue);box-shadow:0 4px 20px rgba(67,114,181,.12);
+  transform:translateY(-2px)}
+.cat-emoji{font-size:26px}
+.cat-card span{font-size:12px;font-weight:600;color:var(--text);line-height:1.3}
+.cat-card small{font-size:11px;color:var(--muted)}
+
+/* ── PRODUCTS ─────────────────────────────────────────────── */
+.products-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.product-card{background:#fff;border-radius:12px;overflow:hidden;
+  border:1.5px solid #edf0f7;transition:.2s;position:relative}
+.product-card:hover{box-shadow:0 8px 28px rgba(67,114,181,.12);transform:translateY(-3px)}
+.product-img{height:160px;position:relative;overflow:hidden}
+.product-img .img-holder{height:100%;border-radius:0;border:none;
+  background:linear-gradient(135deg,#f0f4ff,#e8edf9)}
+.product-img .img-holder::before{font-size:40px;opacity:.4}
+.product-label{position:absolute;top:8px;left:8px;z-index:1;
+  background:var(--yellow);color:var(--dark);font-size:10px;font-weight:800;
+  padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em}
+.product-label.new{background:var(--blue);color:#fff}
+.product-info{padding:13px}
+.product-cat-tag{font-size:11px;color:var(--muted);font-weight:500;margin-bottom:4px}
+.product-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;line-height:1.3}
+.product-price{font-size:16px;font-weight:800;color:var(--blue)}
+.product-price del{font-size:12px;color:var(--muted);font-weight:400;margin-right:5px}
+.add-btn{width:100%;background:var(--blue);color:#fff;border:none;padding:9px;
+  font-family:'Inter',sans-serif;font-size:12px;font-weight:600;
+  border-radius:0 0 10px 10px;cursor:pointer;transition:.2s;margin-top:10px;display:block}
+.add-btn:hover{background:var(--dark)}
+
+/* ── AKCIJA BANER ─────────────────────────────────────────── */
+.akcija-baner{max-width:1280px;margin:40px auto 0;padding:0 20px}
+.akcija-inner{background:linear-gradient(135deg,var(--yellow) 0%,#f0d44a 100%);
+  border-radius:16px;overflow:hidden;display:grid;
+  grid-template-columns:1fr 280px;align-items:stretch}
+.akcija-text-col{padding:40px 48px;display:flex;flex-direction:column;
+  justify-content:center;gap:16px}
+.akcija-text h2{font-size:26px;font-weight:900;color:var(--dark);line-height:1.2}
+.akcija-text p{font-size:14px;color:rgba(26,35,64,.7);line-height:1.6;max-width:480px}
+.btn-dark{background:var(--dark);color:#fff;font-weight:700;font-size:14px;
+  padding:12px 28px;border-radius:8px;border:none;cursor:pointer;text-decoration:none;
+  display:inline-block;white-space:nowrap;transition:.2s;width:fit-content}
+.btn-dark:hover{background:#1a2d5a;transform:translateY(-1px)}
+.akcija-photo{position:relative;overflow:hidden;min-height:180px}
+.akcija-photo .img-holder{height:100%;border-radius:0;border:2px dashed rgba(26,35,64,.2);
+  background:rgba(235,202,62,.3)}
+.akcija-photo .img-holder::before{font-size:28px;opacity:.5}
+.akcija-photo .img-holder .ph-label{color:rgba(26,35,64,.4)}
+
+/* ── O NAMA TEASER ────────────────────────────────────────── */
+.onam-section{max-width:1280px;margin:40px auto 0;padding:0 20px}
+.onam-inner{display:grid;grid-template-columns:1fr 1fr;gap:0;
+  border-radius:16px;overflow:hidden;border:1.5px solid #edf0f7;background:#fff}
+.onam-photo{min-height:260px;position:relative}
+.onam-photo .img-holder{height:100%;border-radius:0;border:none;
+  background:linear-gradient(135deg,#e8f0fa,#d0dff5);min-height:260px}
+.onam-photo .img-holder::before{font-size:36px;opacity:.4}
+.onam-content{padding:48px 40px;display:flex;flex-direction:column;justify-content:center;gap:16px}
+.onam-label{font-size:11px;font-weight:700;color:var(--blue);
+  text-transform:uppercase;letter-spacing:.1em}
+.onam-content h2{font-size:26px;font-weight:900;color:var(--text);line-height:1.2}
+.onam-content h2 span{color:var(--blue)}
+.onam-content p{font-size:14px;color:var(--muted);line-height:1.7}
+.onam-stats{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
+.onam-stat{text-align:left}
+.onam-stat-num{font-size:28px;font-weight:900;color:var(--dark)}
+.onam-stat-label{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* ── STATS ────────────────────────────────────────────────── */
+.stats{max-width:1280px;margin:40px auto 0;padding:0 20px}
+.stats-inner{background:var(--dark);border-radius:16px;padding:36px 48px;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.stat-item{text-align:center}
+.stat-num{font-size:38px;font-weight:900;color:var(--yellow)}
+.stat-label{font-size:12px;color:rgba(255,255,255,.7);font-weight:500;margin-top:4px}
+
+/* ── FOOTER ───────────────────────────────────────────────── */
+footer{background:var(--dark);margin-top:60px;padding:48px 0 24px}
+.footer-inner{max-width:1280px;margin:0 auto;padding:0 20px;
+  display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px}
+.footer-brand p{font-size:13px;color:rgba(255,255,255,.6);margin:12px 0;line-height:1.7}
+.footer-brand .contact-info{font-size:12px;color:rgba(255,255,255,.5)}
+.footer-brand .contact-info p{margin:4px 0}
+.footer-col h4{font-size:11px;font-weight:700;color:rgba(255,255,255,.4);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px}
+.footer-col a{display:block;font-size:13px;color:rgba(255,255,255,.7);
+  text-decoration:none;margin-bottom:8px;transition:.15s}
+.footer-col a:hover{color:var(--yellow)}
+.footer-bottom{max-width:1280px;margin:32px auto 0;padding:24px 20px 0;
+  border-top:1px solid rgba(255,255,255,.08);
+  display:flex;justify-content:space-between;align-items:center;gap:16px}
+.footer-bottom p{font-size:12px;color:rgba(255,255,255,.3)}
+
+/* PROTOTYPE LABEL */
+.prototype-label{position:fixed;bottom:16px;right:16px;background:var(--yellow);
+  color:var(--dark);font-weight:800;font-size:12px;padding:8px 16px;
+  border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.2);z-index:999}
+
+/* ── RESPONSIVE ───────────────────────────────────────────── */
+
+/* --- Tablet: 1024px --- */
+@media(max-width:1024px){
+  .hero-akcija{grid-template-columns:1fr 300px}
+  .hero-main{grid-template-columns:1fr 180px}
+  .hero-photo-holder{height:180px}
+  .hero-main h1{font-size:30px}
+  .products-grid{grid-template-columns:repeat(4,1fr)}
+  .cat-grid{grid-template-columns:repeat(4,1fr)}
+  .footer-inner{grid-template-columns:1.5fr 1fr 1fr;gap:28px}
+  .footer-inner .footer-col:last-child{grid-column:2}
+  .mega-grid{grid-template-columns:repeat(3,1fr)}
+}
+
+/* --- Tablet portrait: 768px --- */
+@media(max-width:768px){
+  /* Header */
+  .search-bar{display:none}
+  .nav-links{display:none}
+  .hamburger{display:flex}
+  .header-icons .icon-btn:nth-child(1),.header-icons .icon-btn:nth-child(2){display:none}
+  .header-inner{gap:12px}
+
+  /* Ticker */
+  .ticker{font-size:11px;padding:6px 12px}
+
+  /* Hero: stack */
+  .hero-akcija{grid-template-columns:1fr;gap:12px}
+  .hero-main{grid-template-columns:1fr;padding:28px}
+  .hero-img-col{display:none}
+  .hero-main h1{font-size:28px}
+  .hero-main::before{display:none}
+  .hero-side{flex-direction:row}
+  .mini-banner{flex:1;min-height:130px}
+
+  /* Promo strip: 2x2 */
+  .promo-strip{grid-template-columns:repeat(2,1fr)}
+
+  /* Categories: 3 cols */
+  .cat-grid{grid-template-columns:repeat(3,1fr)}
+
+  /* Products: 2 cols */
+  .products-grid{grid-template-columns:repeat(2,1fr)}
+  .product-img{height:140px}
+
+  /* Akcija baner */
+  .akcija-inner{grid-template-columns:1fr}
+  .akcija-photo{min-height:140px}
+
+  /* O nama */
+  .onam-inner{grid-template-columns:1fr}
+  .onam-photo{min-height:200px}
+  .onam-photo .img-holder{min-height:200px}
+  .onam-content{padding:32px 24px}
+
+  /* Stats: 2x2 */
+  .stats-inner{grid-template-columns:repeat(2,1fr);padding:28px 24px}
+  .stat-num{font-size:32px}
+
+  /* Footer: 2 cols */
+  .footer-inner{grid-template-columns:1fr 1fr;gap:32px}
+  .footer-inner .footer-brand{grid-column:1/-1}
+
+  /* Mega */
+  .mega-grid{grid-template-columns:repeat(2,1fr)}
+}
+
+/* --- Mobile: 480px --- */
+@media(max-width:480px){
+  .header-inner{padding:0 14px;gap:10px}
+
+  .hero-akcija{margin-top:16px;padding:0 12px}
+  .hero-main{padding:22px 20px;min-height:240px}
+  .hero-main h1{font-size:24px}
+  .hero-main p{font-size:13px;margin-bottom:16px}
+  .countdown{gap:6px}
+  .cd-item{min-width:46px;padding:6px 8px}
+  .cd-num{font-size:18px}
+  .hero-side{flex-direction:column}
+  .mini-banner{min-height:110px}
+
+  .promo-strip{grid-template-columns:1fr;gap:8px;padding:0 12px}
+  .promo-card{padding:14px}
+
+  .section{padding:0 12px;margin-top:28px}
+  .section-header h2{font-size:18px}
+
+  .cat-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .cat-card{padding:14px 8px}
+  .cat-emoji{font-size:22px}
+  .cat-card span{font-size:11px}
+
+  .products-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .product-img{height:120px}
+  .product-name{font-size:12px}
+  .product-price{font-size:14px}
+  .add-btn{font-size:11px;padding:8px}
+
+  .akcija-baner{padding:0 12px}
+  .akcija-text-col{padding:24px 20px;gap:12px}
+  .akcija-text h2{font-size:20px}
+
+  .onam-section{padding:0 12px}
+  .onam-content{padding:24px 20px}
+  .onam-content h2{font-size:20px}
+  .onam-stats{grid-template-columns:1fr 1fr;gap:12px}
+  .onam-stat-num{font-size:22px}
+
+  .stats{padding:0 12px}
+  .stats-inner{padding:24px 20px;gap:16px}
+  .stat-num{font-size:26px}
+
+  .footer-inner{grid-template-columns:1fr;gap:24px}
+  .footer-bottom{flex-direction:column;gap:8px;text-align:center}
+
+  .prototype-label{font-size:11px;padding:6px 12px;bottom:12px;right:12px}
+}
+</style>
+</head>
+<body>
+
+<div class="prototype-label">Prototip dizajna - Akcije u prvom planu</div>
+
+<!-- TICKER -->
+<div class="ticker">🚜 Besplatna dostava za narudžbine preko <span>15.000 RSD</span> &nbsp;|&nbsp; 📦 Brza isporuka 24–48h &nbsp;|&nbsp; 🌾 Sezona prolećne setve u toku</div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <a href="#" class="logo">
+      <img src="/Logo-Meteor-Komerc.png" alt="logo">
+    </a>
+    <div class="search-bar">
+      <input type="text" placeholder="Pretražite 13.000+ proizvoda...">
+      <button>🔍</button>
+    </div>
+    <nav class="nav-links">
+      <div class="mega-wrap">
+        <button class="mega-trigger">Proizvodi <span class="arrow">▾</span></button>
+        <div class="mega-dropdown">
+          <div class="mega-dropdown-inner">
+            <div class="mega-dropdown-title">Sve kategorije proizvoda</div>
+            <div class="mega-grid">
+              <a href="#" class="mega-item"><div class="mega-item-ico">🌿</div><div class="mega-item-text"><span>Zaštita bilja</span><small>2.400+ art.</small></div></a>
+              <a href="#" class="mega-item"><div class="mega-item-ico">🧪</div><div class="mega-item-text"><span>Đubriva i oplemenjivači</span><small>1.200+ art.</small></div></a>
+              <a href="#" class="mega-item"><div class="mega-item-ico">🌱</div><div class="mega-item-text"><span>Semenska roba</span><small>850+ art.</small></div></a>
+              <a href="#" class="mega-item"><div class="mega-item-ico">🔧</div><div class="mega-item-text"><span>Alati i mašine</span><small>3.100+ art.</small></div></a>
+              <a href="#" class="mega-item"><div class="mega-item-ico">💧</div><div class="mega-item-text"><span>Sistemi za navodnjavanje</span><small>640+ art.</small></div></a>
+              <a href="#" class="mega-item"><div class="mega-item-ico">🏡</div><div class="mega-item-text"><span>Kuća i dvorište</span><small>920+ art.</small></div></a>
+              <a href="#" class="mega-item"><div class="mega-item-ico">🥬</div><div class="mega-item-text"><span>Program za baštu</span><small>780+ art.</small></div></a>
+              <a href="#" class="mega-item"><div class="mega-item-ico">🐄</div><div class="mega-item-text"><span>Program za životinje</span><small>430+ art.</small></div></a>
+              <a href="#" class="mega-item"><div class="mega-item-ico">🚜</div><div class="mega-item-text"><span>Oprema za ratarstvo</span><small>1.800+ art.</small></div></a>
+              <a href="#" class="mega-item"><div class="mega-item-ico">🛡️</div><div class="mega-item-text"><span>HTZ oprema</span><small>310+ art.</small></div></a>
+              <a href="#" class="mega-item"><div class="mega-item-ico">🐛</div><div class="mega-item-text"><span>DDD program</span><small>220+ art.</small></div></a>
+            </div>
+            <div class="mega-footer">
+              <a href="#" class="mega-footer-left">🔥 Pogledaj trenutne akcije</a>
+              <a href="#" class="mega-all-btn">Svi proizvodi →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <a href="#">Akcije</a>
+      <a href="#">O nama</a>
+      <a href="#">Kontakt</a>
+    </nav>
+    <div class="header-icons">
+      <button class="icon-btn">♡</button>
+      <button class="icon-btn">👤</button>
+      <button class="icon-btn" style="position:relative">🛒<span class="badge">3</span></button>
+    </div>
+    <button class="hamburger" id="hamburger" aria-label="Meni">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-search">
+    <input type="text" placeholder="Pretražite 13.000+ proizvoda...">
+  </div>
+  <div class="mobile-nav-links">
+    <a href="#">Akcije 🔥</a>
+    <a href="#">O nama</a>
+    <a href="#">Kontakt</a>
+  </div>
+  <div class="mobile-cat-title">Kategorije proizvoda</div>
+  <div class="mobile-cat-grid">
+    <a href="#" class="mobile-cat-item">🌿 Zaštita bilja</a>
+    <a href="#" class="mobile-cat-item">🧪 Đubriva</a>
+    <a href="#" class="mobile-cat-item">🌱 Semenska roba</a>
+    <a href="#" class="mobile-cat-item">🔧 Alati i mašine</a>
+    <a href="#" class="mobile-cat-item">💧 Navodnjavanje</a>
+    <a href="#" class="mobile-cat-item">🏡 Kuća i dvorište</a>
+    <a href="#" class="mobile-cat-item">🥬 Bašta</a>
+    <a href="#" class="mobile-cat-item">🐄 Životinje</a>
+    <a href="#" class="mobile-cat-item">🚜 Ratarstvo</a>
+    <a href="#" class="mobile-cat-item">🛡️ HTZ oprema</a>
+    <a href="#" class="mobile-cat-item">🐛 DDD</a>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero-akcija">
+  <div class="hero-main">
+    <div class="hero-content">
+      <div class="hero-badge">⚡ Prolećna akcija - do 30% popusta</div>
+      <h1>Pripremite imanje<br>za <span>prolećnu setvu</span></h1>
+      <p>Herbicidi, đubriva i semenska roba po najboljim cenama sezone. Ograničene količine - naručite na vreme.</p>
+      <div class="hero-cta-row">
+        <a href="#" class="btn-primary">Pogledaj akciju →</a>
+        <a href="#" class="btn-outline">Sve kategorije</a>
+      </div>
+      <div class="countdown">
+        <div class="cd-item"><div class="cd-num">05</div><div class="cd-label">Dana</div></div>
+        <div class="cd-item"><div class="cd-num">14</div><div class="cd-label">Sati</div></div>
+        <div class="cd-item"><div class="cd-num">32</div><div class="cd-label">Min</div></div>
+      </div>
+    </div>
+    <div class="hero-img-col">
+      <!-- FOTO: traktor / polje / sezona setve — landscape format
+      <div class="hero-photo-holder">
+        <span class="ph-label">Foto hero sekcije<br>npr. traktor / njiva / prolećna setva</span>
+      </div> -->
+      <img src="/prototype_img/hero_img.png" alt="hero_img" style="border-radius: 12px;">
+    </div>
+  </div>
+  <div class="hero-side">
+    <a href="#" class="mini-banner">
+      <div class="mini-banner-bg"></div>
+      <!-- FOTO: semenska roba, vrećice semena, klijanje -->
+      <div class="mini-banner-img"><div class="img-holder"></div></div>
+      <div class="mini-banner-content">
+        <div class="mini-banner-badge">Nova sezona</div>
+        <h3>Semenska roba<br>2025</h3>
+        <p>Suncokret, kukuruz, soja →</p>
+      </div>
+      <div class="mini-banner-arrow">→</div>
+    </a>
+    <a href="#" class="mini-banner mini-banner-2">
+      <div class="mini-banner-bg"></div>
+      <!-- FOTO: vreće đubriva / rasuto đubrivo -->
+      <div class="mini-banner-img"><div class="img-holder"></div></div>
+      <div class="mini-banner-content">
+        <div class="mini-banner-badge">Posebna ponuda</div>
+        <h3>NPK đubriva<br>u rasutom stanju</h3>
+        <p>Direktno iz skladišta →</p>
+      </div>
+      <div class="mini-banner-arrow">→</div>
+    </a>
+  </div>
+</div>
+
+<!-- PROMO STRIP -->
+<div class="promo-strip">
+  <div class="promo-card"><div class="promo-icon">🚚</div><div><h4>Besplatna dostava</h4><p>Za narudžbine preko 15.000 RSD</p></div></div>
+  <div class="promo-card"><div class="promo-icon">🏪</div><div><h4>Centralni magacin</h4><p>Sombor - preuzimanje odmah</p></div></div>
+  <div class="promo-card"><div class="promo-icon">📞</div><div><h4>Stručna podrška</h4><p>Agronomi dostupni svakog dana</p></div></div>
+  <div class="promo-card"><div class="promo-icon">💳</div><div><h4>Online plaćanje</h4><p>Kartice, račun, valuta</p></div></div>
+</div>
+
+<!-- KATEGORIJE -->
+<div class="section">
+  <div class="section-header">
+    <h2>Kategorije <span class="tag">11 kategorija</span></h2>
+    <a href="#" class="see-all">Sve kategorije →</a>
+  </div>
+  <div class="cat-grid">
+    <a href="#" class="cat-card"><div class="cat-emoji">🌿</div><span>Sredstva za zaštitu bilja</span><small>2.400+ art.</small></a>
+    <a href="#" class="cat-card"><div class="cat-emoji">🌱</div><span>Semenska roba</span><small>850+ art.</small></a>
+    <a href="#" class="cat-card"><div class="cat-emoji">🧪</div><span>Đubriva i oplemenjivači</span><small>1.200+ art.</small></a>
+    <a href="#" class="cat-card"><div class="cat-emoji">🔧</div><span>Alati i mašine</span><small>3.100+ art.</small></a>
+    <a href="#" class="cat-card"><div class="cat-emoji">💧</div><span>Sistemi za navodnjavanje</span><small>640+ art.</small></a>
+    <a href="#" class="cat-card"><div class="cat-emoji">🏡</div><span>Kuća i dvorište</span><small>920+ art.</small></a>
+    <a href="#" class="cat-card"><div class="cat-emoji">🥬</div><span>Program za baštu</span><small>780+ art.</small></a>
+    <a href="#" class="cat-card"><div class="cat-emoji">🐄</div><span>Program za životinje</span><small>430+ art.</small></a>
+    <a href="#" class="cat-card"><div class="cat-emoji">🚜</div><span>Oprema za ratarstvo</span><small>1.800+ art.</small></a>
+    <a href="#" class="cat-card"><div class="cat-emoji">🛡️</div><span>HTZ oprema</span><small>310+ art.</small></a>
+    <a href="#" class="cat-card"><div class="cat-emoji">🐛</div><span>DDD</span><small>220+ art.</small></a>
+  </div>
+</div>
+
+<!-- AKCIJA PROIZVODI -->
+<div class="section">
+  <div class="section-header">
+    <h2>Akcijski proizvodi <span class="tag">-10% do -30%</span></h2>
+    <a href="#" class="see-all">Svi akcijski →</a>
+  </div>
+  <div class="products-grid">
+    <div class="product-card">
+      <div class="product-img">
+        <span class="product-label">-25%</span>
+        <!-- FOTO: Galenika Akord fungicid, boca, proizvod -->
+        <!-- <div class="img-holder" title="Foto: Galenika Akord Fungicid 1L"></div> -->
+         <img src="/prototype_img/GAL-FUNG-01.webp" alt="GAL-FUNG-01" style="width: 100%; height: 100%;">
+      </div>
+      <div class="product-info">
+        <div class="product-cat-tag">Sredstva za zaštitu bilja</div>
+        <div class="product-name">Galenika Akord Fungicid</div>
+        <div class="product-price"><del>3.040 RSD</del> 2.280 RSD</div>
+        <button class="add-btn">+ Dodaj u korpu</button>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-img">
+        <span class="product-label">-20%</span>
+        <!-- FOTO: vreća NPK đubriva 50kg -->
+        <!-- <div class="img-holder" title="Foto: NPK 15:15:15 Đubrivo 50kg"></div> -->
+        <img src="/prototype_img/KPK-KUT-500.webp" alt="KPK-KUT-500" style="width: 100%; height: 100%;">
+      </div>
+      <div class="product-info">
+        <div class="product-cat-tag">Sistemi za navodnjavanje</div>
+        <div class="product-name">Kotur trake KPK 500m</div>
+        <div class="product-price"><del>6.485 RSD</del> 5.188 RSD</div>
+        <button class="add-btn">+ Dodaj u korpu</button>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-img">
+        <span class="product-label new">Novo</span>
+        <!-- FOTO: vrećica hibridnog kukuruza NS 444 -->
+        <!-- <div class="img-holder" title="Foto: Hibridni Kukuruz NS 444 Ultra"></div> -->
+        <img src="/prototype_img/LOP-001.webp" alt="LOP-001" style="width: 100%; height: 100%;">
+      </div>
+      <div class="product-info">
+        <div class="product-cat-tag">Alati i mašine</div>
+        <div class="product-name">Robusna lopata sa drškom</div>
+        <div class="product-price">1.425 RSD</div>
+        <button class="add-btn">+ Dodaj u korpu</button>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-img">
+        <span class="product-label">-20%</span>
+        <!-- FOTO: kotur creva / navodnjavanja trake -->
+        <!-- <div class="img-holder" title="Foto: Kotur Trake KPK 500m 16mm"></div> -->
+        <img src="/prototype_img/NPK-1515-1.webp" alt="NPK-1515-1" style="width: 100%; height: 100%;">
+      </div>
+      <div class="product-info">
+        <div class="product-cat-tag">Đubriva i oplemenjivači zemljišta</div>
+        <div class="product-name">Đubrivo NPK 15:15:15</div>
+        <div class="product-price"><del>4.240 RSD</del> 3.390 RSD</div>
+        <button class="add-btn">+ Dodaj u korpu</button>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-img">
+        <span class="product-label">-10%</span>
+        <!-- FOTO: prskalica leđna, plava/zelena -->
+        <!-- <div class="img-holder" title="Foto: Prskalica leđna 16L Professional"></div> -->
+        <img src="/prototype_img/VILL-LOP-01.webp" alt="VILL-LOP-01" style="width: 100%; height: 100%;">
+      </div>
+      <div class="product-info">
+        <div class="product-cat-tag">Alati i mašine</div>
+        <div class="product-name">Villager Lopata Špic</div>
+        <div class="product-price"><del>1.270 RSD</del> 1.140 RSD</div>
+        <button class="add-btn">+ Dodaj u korpu</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AKCIJA BANER -->
+<div class="akcija-baner">
+  <div class="akcija-inner">
+    <div class="akcija-text-col">
+      <div class="akcija-text">
+        <h2>🌾 Prolećna setva 2025 -<br>Sve na jednom mestu</h2>
+        <p>Herbicidi, fungicidi, insekticidi i semenski materijal od vodećih proizvođača. Pogledajte kompletan program za vašu kulturu.</p>
+      </div>
+      <a href="#" class="btn-dark">Pogledaj katalog →</a>
+    </div>
+    <!-- FOTO: njiva u setvi, traktor koji ore, ili kombinovana slika sa vrećama i poljem -->
+    <div class="akcija-photo">
+      <img src="/prototype_img/akcija_baner.png" alt="akcija_baner" style="height: 100%;">
+      <!-- <div class="img-holder" style="height:100%">
+        <span class="ph-label">Foto: njiva / traktor / setva</span>
+      </div> -->
+    </div>
+  </div>
+</div>
+
+<!-- POPULARNI -->
+<div class="section">
+  <div class="section-header">
+    <h2>Najprodavanije <span>ove sezone</span></h2>
+    <a href="#" class="see-all">Sve bestsellere →</a>
+  </div>
+  <div class="products-grid">
+    <div class="product-card">
+      <div class="product-img">
+        <span class="product-label">-25%</span>
+        <!-- FOTO: Galenika Akord fungicid, boca, proizvod -->
+        <!-- <div class="img-holder" title="Foto: Galenika Akord Fungicid 1L"></div> -->
+         <img src="/prototype_img/GAL-FUNG-01.webp" alt="GAL-FUNG-01" style="width: 100%; height: 100%;">
+      </div>
+      <div class="product-info">
+        <div class="product-cat-tag">Sredstva za zaštitu bilja</div>
+        <div class="product-name">Galenika Akord Fungicid</div>
+        <div class="product-price"><del>3.040 RSD</del> 2.280 RSD</div>
+        <button class="add-btn">+ Dodaj u korpu</button>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-img">
+        <span class="product-label">-20%</span>
+        <!-- FOTO: vreća NPK đubriva 50kg -->
+        <!-- <div class="img-holder" title="Foto: NPK 15:15:15 Đubrivo 50kg"></div> -->
+        <img src="/prototype_img/KPK-KUT-500.webp" alt="KPK-KUT-500" style="width: 100%; height: 100%;">
+      </div>
+      <div class="product-info">
+        <div class="product-cat-tag">Sistemi za navodnjavanje</div>
+        <div class="product-name">Kotur trake KPK 500m</div>
+        <div class="product-price"><del>6.485 RSD</del> 5.188 RSD</div>
+        <button class="add-btn">+ Dodaj u korpu</button>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-img">
+        <span class="product-label new">Novo</span>
+        <!-- FOTO: vrećica hibridnog kukuruza NS 444 -->
+        <!-- <div class="img-holder" title="Foto: Hibridni Kukuruz NS 444 Ultra"></div> -->
+        <img src="/prototype_img/LOP-001.webp" alt="LOP-001" style="width: 100%; height: 100%;">
+      </div>
+      <div class="product-info">
+        <div class="product-cat-tag">Alati i mašine</div>
+        <div class="product-name">Robusna lopata sa drškom</div>
+        <div class="product-price">1.425 RSD</div>
+        <button class="add-btn">+ Dodaj u korpu</button>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-img">
+        <span class="product-label">-20%</span>
+        <!-- FOTO: kotur creva / navodnjavanja trake -->
+        <!-- <div class="img-holder" title="Foto: Kotur Trake KPK 500m 16mm"></div> -->
+        <img src="/prototype_img/NPK-1515-1.webp" alt="NPK-1515-1" style="width: 100%; height: 100%;">
+      </div>
+      <div class="product-info">
+        <div class="product-cat-tag">Đubriva i oplemenjivači zemljišta</div>
+        <div class="product-name">Đubrivo NPK 15:15:15</div>
+        <div class="product-price"><del>4.240 RSD</del> 3.390 RSD</div>
+        <button class="add-btn">+ Dodaj u korpu</button>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-img">
+        <span class="product-label">-10%</span>
+        <!-- FOTO: prskalica leđna, plava/zelena -->
+        <!-- <div class="img-holder" title="Foto: Prskalica leđna 16L Professional"></div> -->
+        <img src="/prototype_img/VILL-LOP-01.webp" alt="VILL-LOP-01" style="width: 100%; height: 100%;">
+      </div>
+      <div class="product-info">
+        <div class="product-cat-tag">Alati i mašine</div>
+        <div class="product-name">Villager Lopata Špic</div>
+        <div class="product-price"><del>1.270 RSD</del> 1.140 RSD</div>
+        <button class="add-btn">+ Dodaj u korpu</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- O NAMA TEASER -->
+<div class="onam-section">
+  <div class="onam-inner">
+    <!-- FOTO: magacin / ekipa / zgrada Meteor Commerce Sombor -->
+    <div class="onam-photo">
+      <img src="/prototype_img/o_nama.png" alt="o_nama" style="width: 100%;">
+      <!-- <div class="img-holder">
+        <span class="ph-label">Foto: magacin / tim / objekat<br>Meteor Commerce, Sombor</span>
+      </div> -->
+    </div>
+    <div class="onam-content">
+      <div class="onam-label">Ko smo mi</div>
+      <h2>Više od 30 godina uz<br><span>vojvođanske poljoprivrednike</span></h2>
+      <p>Meteor Commerce je lider u snabdevanju sredstvima za zaštitu bilja, đubrivima i opremom u Vojvodini. Naš tim agronomskih stručnjaka tu je da vam pomogne da donesete pravu odluku za vašu kulturu i sezonu.</p>
+      <div class="onam-stats">
+        <div class="onam-stat"><div class="onam-stat-num">13.000+</div><div class="onam-stat-label">Proizvoda u ponudi</div></div>
+        <div class="onam-stat"><div class="onam-stat-num">5.000+</div><div class="onam-stat-label">Zadovoljnih kupaca</div></div>
+        <div class="onam-stat"><div class="onam-stat-num">30+</div><div class="onam-stat-label">Godina iskustva</div></div>
+        <div class="onam-stat"><div class="onam-stat-num">11</div><div class="onam-stat-label">Kategorija</div></div>
+      </div>
+      <a href="#" class="btn-dark" style="margin-top:8px">Saznajte više o nama →</a>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats" style="margin-bottom:0">
+  <div class="stats-inner">
+    <div class="stat-item"><div class="stat-num">30+</div><div class="stat-label">Godina iskustva</div></div>
+    <div class="stat-item"><div class="stat-num">5.000+</div><div class="stat-label">Zadovoljnih kupaca</div></div>
+    <div class="stat-item"><div class="stat-num">13.000+</div><div class="stat-label">Proizvoda u ponudi</div></div>
+    <div class="stat-item"><div class="stat-num">11</div><div class="stat-label">Kategorija</div></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="/LogoWhite-Footer.png" alt="logo-footer">
+      <p>Vaš pouzdani partner u poljoprivredi već 30 godina. Kompletna ponuda za zaštitu bilja, ishranu i opremu.</p>
+      <div class="contact-info">
+        <p>📍 Staparski put BB, Sombor</p>
+        <p>📞 +381 (0) 25/432-400</p>
+        <p>📞 +381 (0) 25/448-916</p>
+        <p>📞 +381 (0) 25/448-917</p>
+        <p>✉️ info@meteorkomerc.com</p>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Kategorije</h4>
+      <a href="#">Zaštita bilja</a>
+      <a href="#">Đubriva</a>
+      <a href="#">Semenska roba</a>
+      <a href="#">Navodnjavanje</a>
+      <a href="#">Alati i mašine</a>
+    </div>
+    <div class="footer-col">
+      <h4>Informacije</h4>
+      <a href="#">O nama</a>
+      <a href="#">Politika privatnosti</a>
+      <a href="#">Uslovi korišćenja</a>
+      <a href="#">Povrat robe</a>
+      <a href="#">Kontakt</a>
+    </div>
+    <div class="footer-col">
+      <h4>Pratite nas</h4>
+      <a href="#">Instagram</a>
+      <a href="#">Facebook</a>
+      <a href="#">YouTube</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 Meteor Commerce. Sva prava zadržana.</p>
+    <p>Powered by <a href="https://il2marketing.com/" target="_blank" style="text-decoration: 0; color: #fff;">il2 Marketing</a></p>
+  </div>
+</footer>
+
+<script>
+// ── HAMBURGER ─────────────────────────────────────────────────────
+const hamburger = document.getElementById('hamburger');
+const mobileMenu = document.getElementById('mobileMenu');
+hamburger.addEventListener('click', () => {
+  hamburger.classList.toggle('open');
+  mobileMenu.classList.toggle('open');
+});
+
+// ── COUNTDOWN ─────────────────────────────────────────────────────
+function updateCountdown() {
+  const now = new Date();
+  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 5, 23, 59, 59);
+  const diff = end - now;
+  if (diff <= 0) return;
+  const nums = document.querySelectorAll('.cd-num');
+  if (nums[0]) nums[0].textContent = String(Math.floor(diff / 86400000)).padStart(2,'0');
+  if (nums[1]) nums[1].textContent = String(Math.floor((diff % 86400000) / 3600000)).padStart(2,'0');
+  if (nums[2]) nums[2].textContent = String(Math.floor((diff % 3600000) / 60000)).padStart(2,'0');
+}
+updateCountdown();
+setInterval(updateCountdown, 30000);
+
+// ── SCROLL ANIMATIONS ─────────────────────────────────────────────
+// Inject CSS
+(function() {
+  const s = document.createElement('style');
+  s.textContent = `
+    .mc-reveal {
+      opacity: 0;
+      transform: translateY(36px);
+      transition: opacity .7s cubic-bezier(.22,1,.36,1),
+                  transform .7s cubic-bezier(.22,1,.36,1);
+    }
+    .mc-reveal.mc-in { opacity: 1; transform: none; }
+
+    .mc-card {
+      opacity: 0;
+      transform: translateY(24px) scale(.97);
+      transition: opacity .5s cubic-bezier(.22,1,.36,1),
+                  transform .5s cubic-bezier(.22,1,.36,1);
+    }
+    .mc-card.mc-in { opacity: 1; transform: none; }
+
+    .mc-slide-left {
+      opacity: 0;
+      transform: translateX(-40px);
+      transition: opacity .7s cubic-bezier(.22,1,.36,1),
+                  transform .7s cubic-bezier(.22,1,.36,1);
+    }
+    .mc-slide-left.mc-in { opacity: 1; transform: none; }
+
+    .mc-slide-right {
+      opacity: 0;
+      transform: translateX(40px);
+      transition: opacity .7s cubic-bezier(.22,1,.36,1),
+                  transform .7s cubic-bezier(.22,1,.36,1);
+    }
+    .mc-slide-right.mc-in { opacity: 1; transform: none; }
+  `;
+  document.head.appendChild(s);
+})();
+
+// Mark elements
+// Sekcije (fade up)
+document.querySelectorAll('.section-header, .akcija-baner, .stats').forEach(el => {
+  el.classList.add('mc-reveal');
+});
+
+// Promo strip kartice — stagger
+document.querySelectorAll('.promo-strip .promo-card').forEach((el, i) => {
+  el.classList.add('mc-card');
+  el.style.transitionDelay = `${i * 0.1}s`;
+});
+
+// Kategorije — stagger
+document.querySelectorAll('.cat-grid .cat-card').forEach((el, i) => {
+  el.classList.add('mc-card');
+  el.style.transitionDelay = `${i * 0.06}s`;
+});
+
+// Grupe product kartica — stagger po gridu
+document.querySelectorAll('.products-grid').forEach(grid => {
+  grid.querySelectorAll('.product-card').forEach((el, i) => {
+    el.classList.add('mc-card');
+    el.style.transitionDelay = `${i * 0.09}s`;
+  });
+});
+
+// O nama — slide in iz suprotnih strana
+const onamPhoto = document.querySelector('.onam-photo');
+const onamContent = document.querySelector('.onam-content');
+if (onamPhoto) onamPhoto.classList.add('mc-slide-left');
+if (onamContent) onamContent.classList.add('mc-slide-right');
+
+// Stat items — stagger
+document.querySelectorAll('.stat-item').forEach((el, i) => {
+  el.classList.add('mc-card');
+  el.style.transitionDelay = `${i * 0.1}s`;
+});
+document.querySelectorAll('.onam-stat').forEach((el, i) => {
+  el.classList.add('mc-card');
+  el.style.transitionDelay = `${i * 0.1}s`;
+});
+
+// IntersectionObserver — reveal
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('mc-in');
+      revealObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.mc-reveal, .mc-card, .mc-slide-left, .mc-slide-right')
+  .forEach(el => revealObs.observe(el));
+
+// ── NUMBER COUNTER ─────────────────────────────────────────────────
+function parseTarget(str) {
+  // "13.000+" → 13000 | "5.000+" → 5000 | "30+" → 30 | "11" → 11
+  return parseInt(str.replace(/\./g, '').replace('+', '').trim()) || 0;
+}
+
+function formatResult(n, original) {
+  const hasPlus    = original.includes('+');
+  const usesDot    = original.includes('.'); // Serbian thousand separator
+  let out;
+  if (usesDot) {
+    // format with dot thousands separator
+    out = n.toLocaleString('de-DE'); // de-DE uses dots for thousands
+  } else {
+    out = String(n);
+  }
+  return out + (hasPlus ? '+' : '');
+}
+
+function runCounter(el) {
+  const original = el.dataset.target;
+  const target   = parseTarget(original);
+  if (!target) return;
+  const duration = 1600;
+  const startTs  = performance.now();
+  const easeOut  = t => 1 - Math.pow(1 - t, 3);
+
+  function tick(now) {
+    const progress = Math.min((now - startTs) / duration, 1);
+    const current  = Math.round(easeOut(progress) * target);
+    el.textContent = formatResult(current, original);
+    if (progress < 1) requestAnimationFrame(tick);
+    else el.textContent = original; // restore exact original string
+  }
+  requestAnimationFrame(tick);
+}
+
+// Store original text, reset to "0"
+document.querySelectorAll('.stat-num, .onam-stat-num').forEach(el => {
+  el.dataset.target = el.textContent.trim();
+  el.textContent = '0';
+});
+
+// Fire counter when element scrolls into view
+const counterObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      runCounter(e.target);
+      counterObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.6 });
+
+document.querySelectorAll('.stat-num, .onam-stat-num')
+  .forEach(el => counterObs.observe(el));
+</script>
+</body>
+</html>
